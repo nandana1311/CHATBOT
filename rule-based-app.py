@@ -1,3 +1,4 @@
+import streamlit as st
 st.title("💬 Simple Rule-Based Chatbot")
 st.write("Type something and the chatbot will respond!")
 if "history" not in st.session_state:
