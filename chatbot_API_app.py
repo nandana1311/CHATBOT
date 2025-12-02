@@ -89,10 +89,12 @@ st.markdown("""
     
     /* Main container with flexbox */
     .main-container {
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        width: 100%;
+         display: flex;
+         flex-direction: column;
+         height: 100vh;  /* full screen */
+         width: 100%;
+         margin: 0 !important;
+         padding: 0 !important;
     }
     
     /* Fixed Header - stays at top */
@@ -104,49 +106,63 @@ st.markdown("""
     }
     
     /* Scrollable Chat Area - takes available space */
-    .scrollable-chat {
-        flex: 1;
-        overflow-y: auto;
-        padding: 20px;
-        padding-bottom: 80px; /* Space for chatbox */
-    }
-    
+  .scrollable-chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 22%;
+    padding-bottom: 150px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+
+.messages {
+    margin-top: auto;   /* pushes all messages to bottom */
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
     /* Fixed Chatbox - absolutely at bottom */
-    .fixed-chatbox {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        background: #0a0a0a;
-        padding: 15px 20px;
-        border-top: 1px solid #333;
-        z-index: 1000;
-    }
+   .fixed-chatbox {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #0a0a0a;
+    padding: 18px 22%;
+    border-top: 1px solid #222;
+    z-index: 1000;
+}
+
     
     /* Message styling */
-    .user-message {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 12px 18px;
-        border-radius: 18px 18px 4px 18px;
-        margin: 10px 0 10px auto;
-        max-width: 80%;
-        float: right;
-        clear: both;
-    }
-    
-    .bot-message {
-        background: #222;
-        color: #e0e0e0;
-        padding: 12px 18px;
-        border-radius: 18px 18px 18px 4px;
-        margin: 10px auto 10px 0;
-        max-width: 80%;
-        float: left;
-        clear: both;
-        border: 1px solid #333;
-    }
-    
+   /* Message styling */
+/* ChatGPT-style message bubbles */
+.user-message {
+    background: #1d1d1d;
+    color: white;
+    padding: 14px 18px;
+    border-radius: 16px;
+    margin: 6px 0 6px auto;
+    max-width: 78%;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+.bot-message {
+    background: #1d1d1d;
+    color: #f1f1f1;
+    padding: 14px 18px;
+    border-radius: 16px;
+    margin: 6px auto 6px 0;
+    max-width: 78%;
+    font-size: 15px;
+    line-height: 1.4;
+    border: 1px solid #333;
+}
+
     /* Scrollbar */
     .scrollable-chat::-webkit-scrollbar {
         width: 6px;
@@ -173,7 +189,11 @@ st.markdown("""
     /* Remove Streamlit spacing */
     .main .block-container {
         padding: 0 !important;
-        max-width: 100% !important;
+
+        padding-top: 0 !important;  /* remove top space */
+        padding-bottom: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
     }
     
     /* Make columns full width for chatbox */
@@ -195,13 +215,16 @@ st.markdown('<div class="main-container">', unsafe_allow_html=True)
 # Fixed Header
 st.markdown("""
 <div class="fixed-header">
-    <h1 style="color: white; margin: 0; font-size: 28px;">💬 Chatot</h1>
-    <p style="color: #888; margin: 5px 0 0 0; font-size: 14px;">The brutally honest parrot</p>
+  <h1 style="color: white; margin: 0; font-size: 22px; font-weight: 600;">Chatbot</h1>
+<p style="color: #666; margin: 2px 0 0 0; font-size: 13px;">Sarcastic mode activated 😏</p>
+
+
 </div>
 """, unsafe_allow_html=True)
 
 # Scrollable Chat Area
-st.markdown('<div class="scrollable-chat" id="chat-area">', unsafe_allow_html=True)
+st.markdown('<div class="scrollable-chat" id="chat-area"><div class="messages">', unsafe_allow_html=True)
+
 
 # Display messages
 for msg in st.session_state.messages:
@@ -219,7 +242,7 @@ if not st.session_state.messages:
     ])
     st.markdown(f'<div class="bot-message">🦜 {welcome_msg}</div>', unsafe_allow_html=True)
 
-st.markdown('</div>', unsafe_allow_html=True)
+st.markdown('</div></div>', unsafe_allow_html=True)
 
 # Fixed Chatbox at absolute bottom
 st.markdown('<div class="fixed-chatbox">', unsafe_allow_html=True)
