@@ -5,7 +5,8 @@ import random
 import time
 
 # Configure API
-genai.configure(api_key="AIzaSyDA2CMDLOBC1Z7mBXUARXGqQlL2PP-Rits")
+genai.configure(api_key="AIzaSyC1SvHcTUca2r9ohy3yFKLvye2frQdiGqE")
+
 
 # Initialize session state
 if 'messages' not in st.session_state:
