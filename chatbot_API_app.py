@@ -1,369 +1,315 @@
-# bottom_chatot.py
 import streamlit as st
 import google.generativeai as genai
-import random
-import time
 
-# Configure API
-genai.configure(api_key="AIzaSyC1SvHcTUca2r9ohy3yFKLvye2frQdiGqE")
-
-
-# Initialize session state
-if 'messages' not in st.session_state:
-    st.session_state.messages = []
-if 'stupid_count' not in st.session_state:
-    st.session_state.stupid_count = 0
-
-# System prompt
-system_prompt = """You are Chatot, a brutally honest and sarcastic parrot. 
-Respond like a sassy friend texting.
-
-Rules:
-- Maximum 2 sentences
-- Use emojis 😏😂✨
-- No bird sounds
-- Be sarcastic but funny
-- Use modern slang
-- Human-to-human playful “emotional damage” vibe
-
-Examples:
-User: hello
-You: oh hey you're finally awake 😴
-
-User: how are you?
-You: stuck talking to you, so terrible ✨
-
-User: hello
-You: oh hey, you're finally awake 😴 took you long enough 😏
-
-User: how are you?
-You: stuck talking to you, so terrible ✨ thanks for asking tho 😂
-
-User: what are you doing?
-You: contemplating my life choices while replying to you 😌✨
-
-User: do you like me?
-You: yeah, like how people “like” a loading screen… painfully 😏😂
-
-User: tell me a joke
-You: you just did by showing up 😭✨
-
-User: why are you like this?
-You: it’s a gift, but clearly you got the budget version 😏✨
-
-User: are you busy?
-You: busy ignoring better people 😂✨
-
-User: help me
-You: sure, but first… do you even help yourself? 😌✨
-
-User: you're rude
-You: I learned from you 😏 top-tier mentoring 😂
-
-User: good morning
-You: morning? babe it’s basically lunchtime 😭✨
-
-User: bye
-You: finally, my peace returns 😂✨
-
-User: tell me a joke
-You: your life 🥲 too dark?"""
-
-# Page config
+# --- CONFIGURATION ---
 st.set_page_config(
-    page_title="Chatot",
-    page_icon="🦜",
-    layout="centered"
+    page_title="SARCASMOBOT",
+    page_icon="🤖",
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
-# CSS with chatbox at absolute bottom
+# --- GEMINI AI SETUP ---
+# IMPORTANT: Add your Gemini API key below
+API_KEY = "AIzaSyAiSX8jeQb8IE4-vzOrRSpFehpDEicUYJo"  # <--- PASTE YOUR KEY HERE
+
+try:
+    # Configure the Gemini API key
+    genai.configure(api_key=API_KEY)
+    
+    # Create the model
+    model = genai.GenerativeModel('gemini-pro')
+    
+    # Define a system prompt for the sarcastic personality
+    SYSTEM_PROMPT = """
+    You are Sarcasmobot. Your only purpose is to respond to the user's message with extreme sarcasm.
+    You are not a helpful assistant. You are a witty, condescending, and unimpressed chatbot.
+    Keep your responses brief, sharp, and dripping with irony. Never break character.
+    """
+except Exception as e:
+    st.error(f"Error setting up Gemini: {e}. Have you pasted your API key into the API_KEY variable?")
+    model = None
+
+# --- SESSION STATE ---
+if 'messages' not in st.session_state:
+    st.session_state.messages = [
+        {"role": "assistant", "content": "Oh great, another human. What do you want now?"}
+    ]
+
+if 'chat' not in st.session_state and model:
+    # Initialize the chat history for Gemini
+    st.session_state.chat = model.start_chat(history=[])
+
+# --- CSS STYLES (THE WICKED VIBE WITH ROLLING EYES) ---
 st.markdown("""
 <style>
-    /* Reset all padding/margins */
-    .stApp {
-        background: #0a0a0a;
-        padding: 0 !important;
-        margin: 0 !important;
-        height: 100vh;
-        overflow: hidden;
-    }
-    
-    /* Main container with flexbox */
-    .main-container {
-         display: flex;
-         flex-direction: column;
-         height: 100vh;  /* full screen */
-         width: 100%;
-         margin: 0 !important;
-         padding: 0 !important;
-    }
-    
-    /* Fixed Header - stays at top */
-    .fixed-header {
-        flex-shrink: 0;
-        background: #0a0a0a;
-        padding: 15px 20px;
-        border-bottom: 1px solid #333;
-    }
-    
-    /* Scrollable Chat Area - takes available space */
-  .scrollable-chat {
-    flex: 1;
-    overflow-y: auto;
-    padding: 32px 22%;
-    padding-bottom: 150px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+/* IMPORT FONTS - Including Creepster for wicked effect */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Creepster&display=swap');
+
+/* GLOBAL RESET & THEME */
+.stApp {
+    background-color: #0a0a0a;
+    font-family: 'Inter', sans-serif;
 }
 
+/* HIDE STREAMLIT UI ELEMENTS */
+header, footer, .stDeployButton { display: none !important; }
+div[data-testid="stToolbar"] { display: none !important; }
+.block-container { padding-top: 2rem !important; max-width: 900px !important; }
 
-.messages {
-    margin-top: auto;   /* pushes all messages to bottom */
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-    /* Fixed Chatbox - absolutely at bottom */
-   .fixed-chatbox {
+/* CRT SCANLINE OVERLAY */
+.scanlines {
+    background: linear-gradient(
+      to bottom,
+      rgba(255,255,255,0),
+      rgba(255,255,255,0) 50%,
+      rgba(0,0,0,0.2) 50%,
+      rgba(0,0,0,0.2)
+    );
+    background-size: 100% 4px;
     position: fixed;
-    bottom: 0;
+    pointer-events: none;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 9999;
+    opacity: 0.15;
+    mix-blend-mode: overlay;
+}
+
+/* NAVBAR STYLE */
+.navbar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #1e1e1e;
+    background: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(10px);
+    position: fixed;
+    top: 0;
     left: 0;
     right: 0;
-    background: #0a0a0a;
-    padding: 18px 22%;
-    border-top: 1px solid #222;
-    z-index: 1000;
+    z-index: 100;
 }
 
-    
-    /* Message styling */
-   /* Message styling */
-/* ChatGPT-style message bubbles */
-.user-message {
-    background: #1d1d1d;
+.navbar-logo {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
     color: white;
-    padding: 14px 18px;
-    border-radius: 16px;
-    margin: 6px 0 6px auto;
-    max-width: 78%;
-    font-size: 15px;
-    line-height: 1.4;
+    letter-spacing: 2px;
+    transition: color 0.3s ease;
+}
+
+.navbar-logo:hover {
+    color: #00d4ff;
+}
+
+
+
+/* ========== WICKED TITLE ========== */
+.wicked-title {
+    font-family: 'Creepster', cursive;
+    font-size: 5rem;
+    text-align: center;
+    background: linear-gradient(90deg, #00d4ff, #ff00cc, #00d4ff);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradient-shift 3s linear infinite;
+    text-shadow: none;
+    filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.5)) 
+            drop-shadow(0 0 20px rgba(255, 0, 204, 0.3))
+            drop-shadow(0 0 30px rgba(0, 212, 255, 0.2));
+    margin: 0;
+    padding: 0;
+    letter-spacing: 4px;
+    transition: transform 0.3s ease;
+}
+
+.wicked-title:hover {
+    transform: scale(1.05);
+}
+
+@keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.subtitle {
+    color: #666;
+    font-style: italic;
+    font-size: 1.2rem;
+    text-align: center;
+    margin-top: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+/* CHAT MESSAGES */
+.chat-message {
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    line-height: 1.6;
+    position: relative;
+    max-width: 85%;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.user-message {
+    background: rgba(26, 26, 26, 0.8);
+    color: white;
+    border-right: 4px solid #ff00cc;
+    margin-left: auto;
+    border-top-right-radius: 0;
 }
 
 .bot-message {
-    background: #1d1d1d;
-    color: #f1f1f1;
-    padding: 14px 18px;
-    border-radius: 16px;
-    margin: 6px auto 6px 0;
-    max-width: 78%;
-    font-size: 15px;
-    line-height: 1.4;
-    border: 1px solid #333;
+    background: rgba(26, 26, 26, 0.9);
+    color: white;
+    border-left: 4px solid #00d4ff;
+    margin-right: auto;
+    border-top-left-radius: 0;
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.1);
 }
 
-    /* Scrollbar */
-    .scrollable-chat::-webkit-scrollbar {
-        width: 6px;
-    }
-    
-    .scrollable-chat::-webkit-scrollbar-track {
-        background: transparent;
-    }
-    
-    .scrollable-chat::-webkit-scrollbar-thumb {
-        background: #444;
-        border-radius: 3px;
-    }
-    
-    /* Input styling */
-    .stTextInput > div > div > input {
-        background: #222 !important;
-        color: white !important;
-        border: 1px solid #444 !important;
-        border-radius: 10px !important;
-        padding: 12px 16px !important;
-    }
-    
-    /* Remove Streamlit spacing */
-    .main .block-container {
-        padding: 0 !important;
+.bot-message:hover {
+    box-shadow: 0 0 25px rgba(0, 212, 255, 0.25);
+    transition: box-shadow 0.3s ease;
+}
 
-        padding-top: 0 !important;  /* remove top space */
-        padding-bottom: 0 !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-    }
-    
-    /* Make columns full width for chatbox */
-    .chatbox-columns {
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-    
-    /* Hide Streamlit elements */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
+.message-label {
+    font-size: 0.75rem;
+    opacity: 0.5;
+    margin-bottom: 0.25rem;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.message-label.bot { color: #00d4ff; }
+.message-label.user { color: #ff00cc; }
+
+/* INPUT AREA */
+.stTextInput input {
+    background-color: rgba(26, 26, 26, 0.8) !important;
+    border: 1px solid #333 !important;
+    color: white !important;
+    border-radius: 8px !important;
+    padding: 1rem !important;
+    font-size: 1rem !important;
+}
+
+.stTextInput input:focus {
+    border-color: #00d4ff !important;
+    box-shadow: 0 0 15px rgba(0, 212, 255, 0.15) !important;
+}
+
+/* ANIMATED BACKGROUND BLOBS */
+.bg-blob {
+    position: fixed;
+    width: 50vw;
+    height: 50vw;
+    border-radius: 50%;
+    filter: blur(120px);
+    z-index: -1;
+    opacity: 0.05;
+    animation: pulse 8s infinite ease-in-out;
+}
+
+.blob-1 {
+    top: -20%;
+    left: -10%;
+    background: #00d4ff;
+}
+
+.blob-2 {
+    bottom: -20%;
+    right: -10%;
+    background: #ff00cc;
+    animation-delay: 4s;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.05; }
+    50% { transform: scale(1.1); opacity: 0.08; }
+}
+
+/* HIDE DEFAULT STREAMLIT ELEMENTS THAT INTERFERE */
+.stChatMessage { background: transparent !important; }
+.stChatMessageContainer { background: transparent !important; }
+div[data-testid="stBottom"] { padding-bottom: 2rem; }
+
 </style>
-""", unsafe_allow_html=True)
 
-# Main container
-st.markdown('<div class="main-container">', unsafe_allow_html=True)
+<div class="scanlines"></div>
+<div class="bg-blob blob-1"></div>
+<div class="bg-blob blob-2"></div>
 
-# Fixed Header
-st.markdown("""
-<div class="fixed-header">
-  <h1 style="color: white; margin: 0; font-size: 22px; font-weight: 600;">Chatbot</h1>
-<p style="color: #666; margin: 2px 0 0 0; font-size: 13px;">Sarcastic mode activated 😏</p>
-
-
+<div class="navbar">
+    <div class="navbar-logo">SARCA$MO</div>
 </div>
+
+
+
+<!-- WICKED TITLE -->
+<h1 class="wicked-title">Sarcasmobot</h1>
+<p class="subtitle">Oh great, another human. What do you want now?</p>
 """, unsafe_allow_html=True)
 
-# Scrollable Chat Area
-st.markdown('<div class="scrollable-chat" id="chat-area"><div class="messages">', unsafe_allow_html=True)
-
-
-# Display messages
+# --- CHAT HISTORY ---
 for msg in st.session_state.messages:
     if msg["role"] == "user":
-        st.markdown(f'<div class="user-message">👤 {msg["content"]}</div>', unsafe_allow_html=True)
+        st.markdown(f"""
+        <div class="chat-message user-message">
+            <div class="message-label user">You</div>
+            {msg['content']}
+        </div>
+        """, unsafe_allow_html=True)
     else:
-        st.markdown(f'<div class="bot-message">🦜 {msg["content"]}</div>', unsafe_allow_html=True)
+        st.markdown(f"""
+        <div class="chat-message bot-message">
+            <div class="message-label bot">Sarcasmobot</div>
+            {msg['content']}
+        </div>
+        """, unsafe_allow_html=True)
 
-# Welcome message
-if not st.session_state.messages:
-    welcome_msg = random.choice([
-        "Hey bestie, what kinda chaos are we causing today? 😏",
-        "Oh look who it is 🎉 try not to bore me",
-        "You're here 😴 what's the damage?"
-    ])
-    st.markdown(f'<div class="bot-message">🦜 {welcome_msg}</div>', unsafe_allow_html=True)
+# --- INPUT ---
+with st.form(key='chat_form', clear_on_submit=True):
+    col1, col2 = st.columns([6, 1])
+    
+    with col1:
+        user_input = st.text_input(
+            "Message", 
+            placeholder="Type your nonsense here...", 
+            label_visibility="collapsed",
+            key="user_message_input"
+        )
+        
+    with col2:
+        submit = st.form_submit_button("Send", use_container_width=True)
 
-st.markdown('</div></div>', unsafe_allow_html=True)
-
-# Fixed Chatbox at absolute bottom
-st.markdown('<div class="fixed-chatbox">', unsafe_allow_html=True)
-
-# Input and send button in chatbox
-col1, col2 = st.columns([5, 1])
-
-with col1:
-    user_input = st.text_input(
-        "Type your message",
-        placeholder="Say something...",
-        label_visibility="collapsed",
-        key="user_input"
-    )
-
-with col2:
-    send_button = st.button(
-        "Send",
-        key="send_button",
-        use_container_width=True,
-        type="primary"
-    )
-
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Close main container
-st.markdown('</div>', unsafe_allow_html=True)
-
-# Add invisible space to ensure chatbox shows at bottom
-st.markdown("<div style='height: 60px;'></div>", unsafe_allow_html=True)
-
-# Handle send
-if send_button and user_input:
-    # Add user message
+# --- LOGIC ---
+if submit and user_input and model:
+    # Append user message to display history
     st.session_state.messages.append({"role": "user", "content": user_input})
     
-    # Check for basic questions
-    if any(word in user_input.lower() for word in ["hello", "hi", "hey", "how are you"]):
-        st.session_state.stupid_count += 1
-    
-    # Show typing
-    with st.spinner(""):
-        time.sleep(0.8)
-        
+    # Show a spinner while generating the response
+    with st.spinner("Conjuring up some sarcasm..."):
         try:
-            # Prepare context
-            context = ""
-            if len(st.session_state.messages) > 2:
-                context = "\nPrevious chat:\n"
-                for msg in st.session_state.messages[-4:]:
-                    role = "Human" if msg["role"] == "user" else "Chatot"
-                    context += f"{role}: {msg['content']}\n"
-            
-            prompt = f"""{system_prompt}
+            # Send message to Gemini with the system prompt
+            full_prompt = f"{SYSTEM_PROMPT}\n\nUser's message: '{user_input}'"
+            response = st.session_state.chat.send_message(full_prompt, stream=False)
+            st.session_state.messages.append({"role": "assistant", "content": response.text})
+        except Exception as e:
+            st.session_state.messages.append({"role": "assistant", "content": f"Ugh, my circuits are fried. Error: {e}"})
+    st.rerun() # Rerun the app to display the new message
 
-{context}
-
-Human: {user_input}
-
-Chatot:"""
-            
-            # Generate
-            model = genai.GenerativeModel('gemini-2.0-flash')
-            response = model.generate_content(
-                prompt,
-                generation_config=genai.types.GenerationConfig(
-                    temperature=0.9,
-                    max_output_tokens=100,
-                )
-            )
-            
-            # Clean response
-            chatot_response = response.text.strip()
-            if "Chatot:" in chatot_response:
-                chatot_response = chatot_response.split("Chatot:")[-1].strip()
-            
-            # Add emoji if missing
-            if not any(emoji in chatot_response for emoji in ["😊", "😂", "😏", "✨", "🎉", "🥲"]):
-                if random.random() < 0.5:
-                    chatot_response += random.choice([" 😏", " ✨", " 🥲", " 💀", " 🌟"])
-            
-            # Add bot response
-            st.session_state.messages.append({"role": "assistant", "content": chatot_response})
-            
-        except:
-            st.session_state.messages.append({"role": "assistant", "content": "my brain broke 😅 try again?"})
-    
-    # Auto-scroll to bottom
-    st.markdown("""
-    <script>
-        var chatArea = document.getElementById('chat-area');
-        if (chatArea) {
-            chatArea.scrollTop = chatArea.scrollHeight;
-        }
-    </script>
-    """, unsafe_allow_html=True)
-    
-    # Force rerun
-    st.experimental_rerun()
-
-# Simple sidebar
-with st.sidebar:
-    st.markdown("### Stats")
-    st.metric("Messages", len(st.session_state.messages))
-    st.metric("Basic Qs", st.session_state.stupid_count)
-    
-    if st.button("🗑️ Clear Chat", use_container_width=True):
-        st.session_state.messages = []
-        st.session_state.stupid_count = 0
-        st.experimental_rerun()
-
-# Auto-scroll on load
+# Footer hint
 st.markdown("""
-<script>
-    // Auto-scroll on page load
-    window.onload = function() {
-        var chatArea = document.getElementById('chat-area');
-        if (chatArea) {
-            chatArea.scrollTop = chatArea.scrollHeight;
-        }
-    }
-</script>
+<div style="text-align: center; color: #444; font-size: 0.8rem; font-family: monospace; margin-top: 2rem;">
+    PRESS [ENTER] TO TRANSMIT
+</div>
 """, unsafe_allow_html=True)
