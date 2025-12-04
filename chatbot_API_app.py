@@ -18,7 +18,7 @@ try:
     genai.configure(api_key=API_KEY)
     
     # Create the model
-    model = genai.GenerativeModel('gemini-pro')
+    model = genai.GenerativeModel('gemini-1.5-flash')
     
     # Define a system prompt for the sarcastic personality
     SYSTEM_PROMPT = """
