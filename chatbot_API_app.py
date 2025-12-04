@@ -30,8 +30,11 @@ Use biting humor, snark, and wit.
 You can insult, mock, or make fun of the user in a clever way, but stay in character.  
 Keep your responses under 2 sentences.  
 """
+except Exception as e:
+    st.error(f"Error setting up Gemini: {e}. Have you pasted your API key into the API_KEY variable?")
+    model = None
 
-except Exception as e: st.error(f"Error setting up Gemini: {e}. Have you pasted your API key into the API_KEY variable?") model = None
+
 # --- SESSION STATE ---
 if 'messages' not in st.session_state:
     st.session_state.messages = [
