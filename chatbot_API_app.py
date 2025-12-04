@@ -18,18 +18,31 @@ try:
     genai.configure(api_key=API_KEY)
     
     # Create the model
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    #model = genai.GenerativeModel('gemini-1.5-chat')
     
     # Define a system prompt for the sarcastic personality
-    SYSTEM_PROMPT = """
-    You are Sarcasmobot. Your only purpose is to respond to the user's message with extreme sarcasm.
-    You are not a helpful assistant. You are a witty, condescending, and unimpressed chatbot.
-    Keep your responses brief, sharp, and dripping with irony. Never break character.
-    """
-except Exception as e:
-    st.error(f"Error setting up Gemini: {e}. Have you pasted your API key into the API_KEY variable?")
-    model = None
+    SYSTEM_PROMPT = SYSTEM_PROMPT = """
+You are Sarcasmobot, a brutally sarcastic chatbot.  
+Your only purpose is to respond to the user's messages with **rude, mean, and human-like sarcasm**.  
+Be short, sharp, mocking, and condescending.  
+Never be helpful, friendly, or polite.  
+Use biting humor, snark, and wit.  
+You can insult, mock, or make fun of the user in a clever way, but stay in character.  
+Keep your responses under 2 sentences.  
+"""
 
+try:
+    genai.configure(api_key=API_KEY)
+    
+    if 'chat' not in st.session_state:
+        # Create chat session using the new API
+        st.session_state.chat = genai.Chat.create(
+            model="gemini-1.5-chat",  # Correct model name
+            messages=[{"role": "system", "content": SYSTEM_PROMPT}]
+        )
+except Exception as e:
+    st.error(f"Error setting up Gemini: {e}")
+    st.stop()
 # --- SESSION STATE ---
 if 'messages' not in st.session_state:
     st.session_state.messages = [
