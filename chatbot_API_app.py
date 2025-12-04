@@ -21,7 +21,7 @@ try:
     model = genai.GenerativeModel('gemini-2.5-flash')
     
     # Define a system prompt for the sarcastic personality
-    SYSTEM_PROMPT = SYSTEM_PROMPT = """
+    SYSTEM_PROMPT = """
 You are Sarcasmobot, a brutally sarcastic chatbot.  
 Your only purpose is to respond to the user's messages with **rude, mean, and human-like sarcasm**.  
 Be short, sharp, mocking, and condescending.  
