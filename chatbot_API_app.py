@@ -18,7 +18,7 @@ try:
     genai.configure(api_key=API_KEY)
     
     # Create the model
-    #model = genai.GenerativeModel('gemini-1.5-chat')
+    model = genai.GenerativeModel('gemini-1.5-chat')
     
     # Define a system prompt for the sarcastic personality
     SYSTEM_PROMPT = SYSTEM_PROMPT = """
@@ -31,18 +31,7 @@ You can insult, mock, or make fun of the user in a clever way, but stay in chara
 Keep your responses under 2 sentences.  
 """
 
-try:
-    genai.configure(api_key=API_KEY)
-    
-    if 'chat' not in st.session_state:
-        # Create chat session using the new API
-        st.session_state.chat = genai.Chat.create(
-            model="gemini-1.5-chat",  # Correct model name
-            messages=[{"role": "system", "content": SYSTEM_PROMPT}]
-        )
-except Exception as e:
-    st.error(f"Error setting up Gemini: {e}")
-    st.stop()
+except Exception as e: st.error(f"Error setting up Gemini: {e}. Have you pasted your API key into the API_KEY variable?") model = None
 # --- SESSION STATE ---
 if 'messages' not in st.session_state:
     st.session_state.messages = [
