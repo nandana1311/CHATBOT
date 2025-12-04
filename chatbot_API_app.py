@@ -75,36 +75,6 @@ div[data-testid="stToolbar"] { display: none !important; }
     mix-blend-mode: overlay;
 }
 
-/* NAVBAR STYLE */
-.navbar {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1.5rem;
-    border-bottom: 1px solid #1e1e1e;
-    background: rgba(10, 10, 10, 0.8);
-    backdrop-filter: blur(10px);
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-}
-
-.navbar-logo {
-    font-family: 'Inter', sans-serif;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: white;
-    letter-spacing: 2px;
-    transition: color 0.3s ease;
-}
-
-.navbar-logo:hover {
-    color: #00d4ff;
-}
-
-
 
 /* ========== WICKED TITLE ========== */
 .wicked-title {
@@ -248,9 +218,7 @@ div[data-testid="stBottom"] { padding-bottom: 2rem; }
 <div class="bg-blob blob-1"></div>
 <div class="bg-blob blob-2"></div>
 
-<div class="navbar">
-    <div class="navbar-logo">SARCA$MO</div>
-</div>
+
 
 
 
