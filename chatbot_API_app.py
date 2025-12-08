@@ -1,7 +1,6 @@
 import streamlit as st
 import google.generativeai as genai
 
-# --- CONFIGURATION ---
 st.set_page_config(
     page_title="SARCASMOBOT",
     page_icon="🤖",
@@ -9,18 +8,16 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- GEMINI AI SETUP ---
-# IMPORTANT: Add your Gemini API key below
-API_KEY = "AIzaSyC1LRHuruUVHZSpDNd_4v3zfX7emx9RoR0"  # <--- PASTE YOUR KEY HERE
+
+API_KEY = st.secrets["API_KEY"] 
 
 try:
-    # Configure the Gemini API key
+   
     genai.configure(api_key=API_KEY)
     
-    # Create the model
+ 
     model = genai.GenerativeModel('gemini-2.5-flash')
     
-    # Define a system prompt for the sarcastic personality
     SYSTEM_PROMPT = """
 You are Sarcasmobot, a brutally sarcastic chatbot.  
 Your only purpose is to respond to the user's messages with **rude, mean, and human-like sarcasm**.  
@@ -125,10 +122,10 @@ if 'messages' not in st.session_state:
     ]
 
 if 'chat' not in st.session_state and model:
-    # Initialize the chat history for Gemini
+    
     st.session_state.chat = model.start_chat(history=[])
 
-# --- CSS STYLES (THE WICKED VIBE WITH ROLLING EYES) ---
+
 st.markdown("""
 <style>
 /* IMPORT FONTS - Including Creepster for wicked effect */
