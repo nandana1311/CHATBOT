@@ -11,7 +11,7 @@ st.set_page_config(
 
 # --- GEMINI AI SETUP ---
 # IMPORTANT: Add your Gemini API key below
-API_KEY = "gen-lang-client-0836077382"  # <--- PASTE YOUR KEY HERE
+API_KEY = "AIzaSyC1LRHuruUVHZSpDNd_4v3zfX7emx9RoR0"  # <--- PASTE YOUR KEY HERE
 
 try:
     # Configure the Gemini API key
